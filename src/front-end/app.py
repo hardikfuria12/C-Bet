@@ -17,7 +17,7 @@ from sqlalchemy.engine.url import URL
 # set params
 myDB = URL(drivername='mysql+pymysql', username='root',
                    password='12345678',
-                   host='cbet.c0jjgccwckol.us-east-1.rds.amazonaws.com',
+                   host='cbast-1.rds.amazonaws.com',
                    database='cbet',
                    query={'read_default_file': '~/.my.cnf'})
 conn = create_engine(myDB)
