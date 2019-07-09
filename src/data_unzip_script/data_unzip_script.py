@@ -2,6 +2,8 @@ import time
 import os
 import constants as const
 
+
+# this function untars all the data files that is downloaded from betfair historical api
 def untar_folders():
     root_directory=const.DATA_DIR
     data_folders=os.listdir(root_directory)
@@ -14,9 +16,9 @@ def untar_folders():
             if tar_file==".DS_Store":
                 continue
             tar_path=folder_path+'/'+tar_file
-            print(tar_path)
             os.system('tar xopf '+tar_path+' -C '+const.UNTAR_DIR)
 
+# this function unzips all the zipped data files within the tar files
 def unzip_files():
     root_directory=const.BZ2_DIR
     list_of_events=os.listdir(root_directory)
@@ -31,7 +33,6 @@ def unzip_files():
                 file_path=event_folder+'/'+event_files
                 os.system('bzip2 -d '+file_path)
                 if flag==False:
-                    print(event_id, ' has bz2 files ',file_path)
                     flag=True
         flag=False
 

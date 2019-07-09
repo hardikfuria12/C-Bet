@@ -6,7 +6,9 @@ from kafka import KafkaProducer
 s3 = boto3.client('s3')
 s3.list_objects_v2(Bucket='hardik-testing')
 
-EVENT_SET=set()
+EVENT_SET=set() #once we get a event
+
+
 def publish_message(producer_instance, topic_name, key, value):
     try:
         key_bytes = bytes(key, encoding='utf-8')
@@ -17,6 +19,7 @@ def publish_message(producer_instance, topic_name, key, value):
         print('Exception in publishing message')
         print(str(ex))
 
+# ensures kafka zookeeper and server are running in order to publish messages to a topic
 def connect_kafka_producer():
     _producer = None
     try:
@@ -27,14 +30,12 @@ def connect_kafka_producer():
     finally:
         return _producer
 
+# get all the event folder and all the data contents from the S3 location and send it as an message
+
+#
 def get_all_s3_keys(bucket):
-
-    """Get a list of all keys in an S3 bucket."""
-
-    keys = []
     producer=connect_kafka_producer()
     kwargs = {'Bucket': bucket}
-    i=0
     while True:
         resp = s3.list_objects_v2(**kwargs)
         for obj in resp['Contents']:

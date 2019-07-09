@@ -1,5 +1,7 @@
 # standard library
 import os
+import datetime
+import time
 
 # dash libs
 import dash
@@ -14,10 +16,11 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 
+
 # set params
 myDB = URL(drivername='mysql+pymysql', username='root',
                    password='12345678',
-                   host='cbast-1.rds.amazonaws.com',
+                   host='cbet.c0jjgccwckol.us-east-1.rds.amazonaws.com',
                    database='cbet',
                    query={'read_default_file': '~/.my.cnf'})
 conn = create_engine(myDB)
@@ -78,7 +81,7 @@ def get_seasons(division):
     print(seasons_query,'seasonQUERY')
     seasons = fetch_data(seasons_query)
     print()
-    seasons = list(seasons['instancename'].unique())
+    seasons = list(seasons['markettype'].unique())
     print(seasons)
 
     return seasons
@@ -107,35 +110,12 @@ def get_match_results(division, season):
                 ) d on c.instanceid=d.instanceid
 
         where (a.eventname like "{division}%%" or a.eventname like "%%{division}")
-        and c.rate=d.rate and c.instanceid=d.instanceid and b.instancename="{season}" order by timestamp;
+        and c.rate=d.rate and c.instanceid=d.instanceid and b.markettype="{season}" order by timestamp;
 
         '''
     )
     match_results = fetch_data(results_query)
     return match_results
-
-
-
-
-def draw_season_points_graph(results):
-    print('draw_season',results)
-    dates = results['timestamp'].tolist()
-    points = results['rate'].tolist()
-    print(type(dates[0]))
-    print(points)
-
-    figure = go.Figure(
-        data=[
-            go.Scatter(x=points, y=points, mode='lines+markers')
-        ],
-        layout=go.Layout(
-            title='Points Accumulation',
-            showlegend=False
-        )
-    )
-    # print(type(figure))
-    return figure
-
 
 #########################
 # Dashboard Layout / View
@@ -153,12 +133,32 @@ def onLoad_division_options():
     return division_options
 
 
-# Set up Dashboard and create layout
-app = dash.Dash()
-app.css.append_css({
-    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
-})
 
+external_scripts = [
+    'https://www.google-analytics.com/analytics.js',
+    {'src': 'https://cdn.polyfill.io/v2/polyfill.min.js'},
+    {
+        'src': 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.core.js',
+        'integrity': 'sha256-Qqd/EfdABZUcAxjOkMi8eGEivtdTkh3b65xCZL4qAQA=',
+        'crossorigin': 'anonymous'
+    }
+]
+
+# external CSS stylesheets
+external_stylesheets = [
+    'https://codepen.io/chriddyp/pen/bWLwgP.css',
+    {
+        'href': 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css',
+        'rel': 'stylesheet',
+        'integrity': 'sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO',
+        'crossorigin': 'anonymous'
+    }
+]
+
+
+app = dash.Dash(__name__,
+                external_scripts=external_scripts,
+                external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
 
@@ -172,31 +172,32 @@ app.layout = html.Div([
         html.Div([
             # Select Division Dropdown
             html.Div([
-                html.Div('Select Team', className='three columns'),
+                html.Div('Select Team', className='six columns'),
                 html.Div(dcc.Dropdown(id='division-selector',
                                       options=onLoad_division_options()),
-                         className='nine columns')
+                         className='twelve columns')
             ]),
 
             # Select Season Dropdown
             html.Div([
-                html.Div('Select Market Type', className='three columns'),
+                html.Div('Select Market Type', className='six columns'),
                 html.Div(dcc.Dropdown(id='season-selector'),
-                         className='nine columns')
+                         className='twelve columns')
             ]),
-        ], className='six columns'),
+        ]),
 
         # Empty
-        html.Div(className='six columns'),
-    ], className='twleve columns'),
+    ]),
 
     # Match Results Grid
     html.Div([
         html.Div([
             dcc.Graph(id='season-graph')
-        ], className='six columns')
-    ]),
+        ], className='twelve columns'),
+    html.Div(id='text-content',className='twelve columns'),
+    ])
 ])
+
 
 
 #############################################
@@ -218,24 +219,6 @@ def populate_season_selector(division):
         for season in seasons
     ]
 
-
-# # Load Teams into dropdown
-# @app.callback(
-#     Output(component_id='team-selector', component_property='options'),
-#     [
-#         Input(component_id='division-selector', component_property='value'),
-#         Input(component_id='season-selector', component_property='value')
-#     ]
-# )
-# def populate_team_selector(division, season):
-#     teams = get_teams(division, season)
-#     return [
-#         {'label': team, 'value': team}
-#         for team in teams
-#     ]
-
-
-
 # Update Season Point Graph
 @app.callback(
     Output('season-graph', 'figure'),
@@ -246,32 +229,44 @@ def populate_season_selector(division):
 )
 def load_season_points_graph(division, season):
     results = get_match_results(division, season)
-    print(results)
-    trace_high = go.Scatter(
-    x=results['timestamp'],
-    y=results['rate'],
-    # z=results['eventname'],
-    # l=results['eventdate'],
-    # hovertemplate='<i>Rate</i>: $%{y:.2f}'
-    #               '<br><b>Event:</b>: %{z}<br>'
-    #               '<br><b>Date:</b>: %{l}<br>',
-    text=results['eventname'],
-    # text2=results['eventdate'],
-    # hoverinfo='y',
-    hoverinfo='text',
-
-    name = "Hmm",
-    line = dict(color = '#17BECF'),
-    opacity = 0.8)
-    data=[trace_high]
-    fig=dict(data=data)
+    instance_list=list(results['instancename'].unique())
+    traces=[]
+    for name in instance_list:
+        temp_df=results[results['instancename']==name]
+        traces=traces+[go.Scatter(
+        x=temp_df['timestamp'],
+        y=temp_df['rate'],
+        mode='markers+lines',
+        customdata=temp_df,
+        name=name)]
+    fig=go.Figure(data=traces)
     return fig
 
 
-
-
-
-
+@app.callback(
+    Output('text-content','children'),
+    [Input('season-graph','hoverData')]
+)
+def update_text(hoverData):
+    get_info=hoverData['points'][0]['customdata']
+    print(get_info)
+    event_str=datetime.datetime.strptime(get_info[1].split(' ')[0],"%Y-%m-%d")
+    event_str=event_str.strftime("%d %B, %Y")
+    cause=str(get_info[4])
+    print(cause)
+    if cause=="WINNER":
+        cause="winning"
+    else:
+        cause="losing"
+    return html.P(
+        'Maximum Rate of {} was given during : {} that happened on {} for a {} cause'
+        .format(
+            get_info[6],
+            get_info[0],
+            event_str,
+            cause
+        )
+    )
 
 # start Flask server
 if __name__ == '__main__':
@@ -280,109 +275,3 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=8050
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #######
-# # This script will make regular API calls to http://data-live.flightradar24.com
-# # to obtain updated total worldwide flights data.
-# # ** This version continuously updates the number of flights worldwide,
-# #    AND GRAPHS THOSE RESULTS OVER TIME! **
-# ######
-# import dash
-# import dash_core_components as dcc
-# import dash_html_components as html
-# from dash.dependencies import Input, Output
-# import plotly.graph_objs as go
-# import requests
-#
-# app = dash.Dash()
-#
-# app.layout = html.Div([
-#     html.Div([
-#         html.Iframe(src = 'https://www.flightradar24.com', height = 500, width = 1200)
-#     ]),
-#
-#     html.Div([
-#     html.Pre(
-#         id='counter_text',
-#         children='Active flights worldwide:'
-#     ),
-#     dcc.Graph(id='live-update-graph',style={'width':1200}),
-#     dcc.Interval(
-#         id='interval-component',
-#         interval=6000, # 6000 milliseconds = 6 seconds
-#         n_intervals=0
-#     )])
-# ])
-# counter_list = []
-#
-# @app.callback(Output('counter_text', 'children'),
-#               [Input('interval-component', 'n_intervals')])
-# def update_layout(n):
-#     url = "https://data-live.flightradar24.com/zones/fcgi/feed.js?faa=1\
-#            &mlat=1&flarm=1&adsb=1&gnd=1&air=1&vehicles=1&estimated=1&stats=1"
-#     # A fake header is necessary to access the site:
-#     res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-#     data = res.json()
-#     counter = 0
-#     for element in data["stats"]["total"]:
-#         counter += data["stats"]["total"][element]
-#     counter_list.append(counter)
-#
-#     return 'Active flights worldwide: {}'.format(counter)
-#
-#
-# @app.callback(Output('live-update-graph','figure'),
-#               [Input('interval-component', 'n_intervals')])
-#
-# def update_graph(n):
-#
-#     fig = go.Figure(
-#         data = [go.Scatter(
-#         x = list(range(len(counter_list))),
-#         y = counter_list,
-#         mode='lines+markers'
-#         )])
-#     return fig
-#
-#
-#
-# if __name__ == '__main__':
-#     app.run_server()
