@@ -18,7 +18,7 @@
 
 
 Betfair is the largest Online Sports Betting Exchange. Its turnover was more than 700 million dollars in 2018. Betfair manages more than 200 thousand transacton per sec.    which provides users with betting odds for all the sporting events happening around the world.
-<div style="text-align:center; margin: 50px 0"><img src ="/docs/img/betfair-ui.png" height="200"/></div>
+<div style="text-align:center; margin: 50px 0"><img src ="/docs/img/betfair-ui.png"/></div>
 
 Above figure, represents the User-Interface of Betfair. Where each sporting match between two teams is considered as an **'Event'** (highlighted by the Red Arrow).
 For a given event there are various **'Markets'** ( highlighted with blue arrow ) Each Market has various contenders called **'Runners'**. On the completion of an Event there would be just one winner from all the runners that are there in a given market. 
