@@ -2,17 +2,7 @@
 
 <div style="text-align:center; margin: 50px 0"><img src ="/docs/img/icon.png" height="200"/></div>
 
-## Table of Contents
-1. [Problem](README.md#problem)
-1. [Basic Strategy](README.md#basic-strategy)
-1. [Running Instructions](README.md#running-instructions)
-1. [Demo](README.md#demo)
-1. [Assumptions](README.md#assumptions)
-1. [Files in Repo](README.md#files-in-repo)
-1. [Encryption](README.md#encryption)
-1. [Scalability](README.md#scalability)
-1. [Future Work](README.md#future-work)
-1. [Contact Information](README.md#contact-information)
+
 
 ## Background
 
