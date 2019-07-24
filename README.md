@@ -36,19 +36,20 @@ User will get back 2.0*100 = 200$.
 If user had bet on *runner* Draw or Portland Timbers, he would lost his 100 dollars.
 
 Betting rate is *dynamic* in nature, it keeps on changing till the **event** has officially ended.
-This article gives a much detailed explaination of how the betting rates are given out and adjusted by the the bookeepers. 
+[This article](https://betfair-datascientists.github.io/) gives a much detailed explaination of how the betting rates are given out and adjusted by the the bookeepers. 
 So the user in the above case is unsure whether to place a bet at the given rate or wait for a better rate to be offered.
 
-Generally, if the probability of given result is higher then the bettting rate for it would be lower. Like in the above cae NYC is given betting rate of 2.0 because NYC is a very stong Soccer Team and in almost all the matches NYC plays, they are always the favorites, thereby the betting rate in favor of NYC is generally low.
+Generally, if the probability of given result is higher then the bettting rate for it would be lower. Like in the above case NYC is given betting rate of 2.0 because NYC is a very strong Soccer Team and in almost all the matches NYC plays, they are always the favorites, thereby the betting rate in favor of NYC is generally low.
 
 ## Problem Statement
 
-To find when was the maximum and most favorable odds given, by, converting 100 gigabytes of unstructured, messy time-stamped historical data to a structured and easy to use Data Repository.
+To help users in making low-risk maximum reward bets on a soccer match on an Online Sports Betting Exchage, by converting 100 gigabytes of unstructured, messy time-stamped historical data to a structured and easy to use Data Repository.
 Having a structured data repository for a complex system enables faster analysis and quick decision making.  
 
 ## Pipeline
 
 <div style="text-align:center; margin: 50px 0"><img src ="/docs/img/pipeline.png" height="200"/></div>
+
 
 ## Authors
 
